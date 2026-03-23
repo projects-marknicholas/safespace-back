@@ -156,7 +156,7 @@ class ReportController {
       updateData.updatedAt = new Date();
 
       // Update report in database
-      const updated = await ReportModel.update(reportId, userId, updateData);
+      const updated = await ReportModel.update(reportId, updateData);
 
       if (!updated) {
         return res.status(STATUS_CODES.NOT_FOUND).json({

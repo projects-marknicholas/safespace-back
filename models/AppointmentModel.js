@@ -196,7 +196,7 @@ class AppointmentModel {
     }
   }
 
-  static async update(appointmentId, userId, updateData) {
+  static async update(appointmentId, userId = '', updateData) {
     try {
       const appointmentsRef = db.collection(this.collection);
       let query = appointmentsRef.where('appointmentId', '==', appointmentId);

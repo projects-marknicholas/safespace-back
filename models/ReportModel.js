@@ -199,12 +199,15 @@ class ReportModel {
     }
   }
 
-  static async update(reportId, userId, updateData) {
+  static async update(reportId, userId = '', updateData) {
     try {
       const reportRef = db.collection(this.collection);
-      const query = reportRef
-        .where('reportId', '==', reportId)
-        .where('userId', '==', userId);
+      let query = reportRef.where('reportId', '==', reportId);
+      
+      // Only add userId condition if userId exists and is not empty
+      if (userId && userId.trim() !== '') {
+        query = query.where('userId', '==', userId);
+      }
       
       const snapshot = await query.get();
       
@@ -215,8 +218,11 @@ class ReportModel {
       const doc = snapshot.docs[0];
       await doc.ref.update(updateData);
       
-      // Invalidate cache for this user after creating new report
-      await reportCache.invalidateUserCache(userId);
+      // Invalidate cache for this user after updating report
+      // Only invalidate if userId exists, otherwise skip
+      if (userId && userId.trim() !== '') {
+        await reportCache.invalidateUserCache(userId);
+      }
       
       return true;
       
