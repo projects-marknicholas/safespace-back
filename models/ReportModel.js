@@ -218,10 +218,8 @@ class ReportModel {
       const doc = snapshot.docs[0];
       await doc.ref.update(updateData);
       
-      // Invalidate cache only if userId is valid
-      if (userId && typeof userId === 'string' && userId.trim()) {
-        await reportCache.invalidateUserCache(userId);
-      }
+      // Invalidate cache for this user after creating new report
+      await reportCache.invalidateAllReportCache();
       
       return true;
       

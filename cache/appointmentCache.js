@@ -72,6 +72,26 @@ class AppointmentCache {
     }
   }
 
+  invalidateAllAppointmentCache() {
+    try {
+      const keys = this.cache.keys();
+      // Filter keys that are related to appointments
+      const appointmentKeys = keys.filter(key => key.includes('appointments_') || key.includes('appointments:'));
+      
+      if (appointmentKeys.length > 0) {
+        const deleted = this.cache.del(appointmentKeys);
+        console.log(`Invalidated ALL ${deleted} appointment cache entries`);
+        return deleted;
+      }
+      
+      console.log('No appointment cache entries to invalidate');
+      return 0;
+    } catch (error) {
+      console.error('Error invalidating all appointment cache:', error);
+      return 0;
+    }
+  }
+
   getStats() {
     const stats = this.cache.getStats();
     return {
