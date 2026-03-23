@@ -199,9 +199,12 @@ class AppointmentModel {
   static async update(appointmentId, userId, updateData) {
     try {
       const appointmentsRef = db.collection(this.collection);
-      const query = appointmentsRef
-        .where('appointmentId', '==', appointmentId)
-        .where('userId', '==', userId);
+      let query = appointmentsRef.where('appointmentId', '==', appointmentId);
+      
+      // Only add userId condition if userId exists and is not empty
+      if (userId && userId.trim() !== '') {
+        query = query.where('userId', '==', userId);
+      }
       
       const snapshot = await query.get();
       
@@ -213,7 +216,10 @@ class AppointmentModel {
       await doc.ref.update(updateData);
       
       // Invalidate cache for this user after updating appointment
-      await AppointmentCache.invalidateUserCache(userId);
+      // Only invalidate if userId exists, otherwise skip or handle differently
+      if (userId && userId.trim() !== '') {
+        await AppointmentCache.invalidateUserCache(userId);
+      }
       
       return true;
       

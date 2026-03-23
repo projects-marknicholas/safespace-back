@@ -125,7 +125,7 @@ class AppointmentController {
       updateData.updatedAt = new Date();
 
       // Update appointment in database
-      const updated = await AppointmentModel.update(appointmentId, userId, updateData);
+      const updated = await AppointmentModel.update(appointmentId, updateData);
 
       if (!updated) {
         return res.status(STATUS_CODES.NOT_FOUND).json({
