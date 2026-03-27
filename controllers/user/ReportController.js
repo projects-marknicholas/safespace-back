@@ -365,6 +365,37 @@ class ReportController {
         });
       }
 
+      // Check existing reports and get sanction recommendation
+      let sanctionResult = null;
+      try {
+        const existingReports = await ReportModel.getCountWithSanction(
+          complainedFullName.trim(),
+          predictedSeverity,
+          complainedClassification
+        );
+        
+        sanctionResult = {
+          reportCount: existingReports.count,
+          recommendedSanction: existingReports.sanction,
+          isRepeatOffender: existingReports.count > 0,
+          offenseLevel: existingReports.count === 0 ? 'First offense' : 
+                        existingReports.count === 1 ? 'Second offense' : 
+                        existingReports.count === 2 ? 'Third offense' : 'Multiple offenses'
+        };
+        
+        // Log for monitoring
+        console.log(`Sanction check for ${complainedFullName}:`, {
+          reportCount: existingReports.count,
+          severity: predictedSeverity,
+          classification: complainedClassification,
+          sanction: existingReports.sanction
+        });
+        
+      } catch (sanctionError) {
+        console.error('Error checking existing reports:', sanctionError);
+        // Continue with report creation even if sanction check fails
+      }
+
       // Create report ID using uuid
       const reportId = uuidv4();
 
@@ -410,7 +441,13 @@ class ReportController {
         predictedSeverityConfidence: predictedSeverityConfidence !== undefined ? predictedSeverityConfidence : null,
         status: 'pending',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+
+        // Sanctions
+        previousReportCount: sanctionResult?.reportCount || 0,
+        recommendedSanction: sanctionResult?.recommendedSanction || null,
+        isRepeatOffender: sanctionResult?.isRepeatOffender || false,
+        offenseLevel: sanctionResult?.offenseLevel || 'First offense'
       };
 
       // Insert report into database
@@ -587,8 +624,7 @@ class ReportController {
           severity: severity,
           classification: classification,
           reportCount: result.count,
-          sanction: result.sanction,
-          recommendation: result.recommendation
+          sanction: result.sanction
         }
       });
 
