@@ -35,6 +35,7 @@ class ReportController {
         complainedClassification,
         complainedCollege,
         complainedDepartment,
+        victimConstituent,
         complainedConstituent,
         complainedInsideCampus,
         complainantStory,
@@ -64,6 +65,7 @@ class ReportController {
         complainedFullName: "Complained Full Name",
         complainedSex: "Complained Sex",
         complainedClassification: "Complained Classification",
+        victimConstituent: "Victim Constituent",
         complainedConstituent: "Complained Constituent",
         complainedInsideCampus: "Complained Inside Campus",
         complainantStory: "Complainant Story",
@@ -242,6 +244,15 @@ class ReportController {
         });
       }
 
+      // Validate constituent
+      const validVictimConstituent = ['Yes', 'No'];
+      if (!validVictimConstituent.includes(victimConstituent)) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          message: 'Invalid Constituent'
+        })
+      }
+
       // Validate complainedConstituent
       const validConstituent = ['Yes', 'No'];
       if (!validConstituent.includes(complainedConstituent)) {
@@ -369,6 +380,7 @@ class ReportController {
         complainedClassification: complainedClassification,
         complainedCollege: complainedCollege.trim(),
         complainedDepartment: complainedDepartment.trim(),
+        victimConstituent: victimConstituent.trim(),
         complainedConstituent: complainedConstituent.trim(),
         complainedInsideCampus: complainedInsideCampus.trim(),
         complainantStory: complainantStory.trim(),
