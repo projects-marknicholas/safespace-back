@@ -223,11 +223,11 @@ class ReportController {
       }
 
       // Validate complainedClassification
-      const validComplainedClassifications = ['Student', 'Professor', 'Instructor', 'Teacher', `Gov't Employee`, 'Stranger', 'Co-Worker', 'Colleague'];
+      const validComplainedClassifications = ['Student', 'Professor', 'Instructor', 'Teacher', `Gov't Employee`, 'Stranger', 'Co-worker', 'Colleague'];
       if (!validComplainedClassifications.includes(complainedClassification)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Classification.'
+          message: 'Invalid Complained Classification.'
         });
       }
 
@@ -393,7 +393,9 @@ class ReportController {
         remarks: remarks || null,
         whereDidYouHearAboutUs: whereDidYouHearAboutUs,
         otherWhereDidYouHearAboutUs: otherWhereDidYouHearAboutUs || null,
-        applicableLaws: applicableLaws.trim(),
+        applicableLaws: Array.isArray(applicableLaws) 
+          ? applicableLaws.join(', ') 
+          : (applicableLaws ? applicableLaws.trim() : ''),
         status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date()
@@ -419,8 +421,7 @@ class ReportController {
       console.error('Error creating report:', error);
       return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: 'Failed to create report',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        message: 'Failed to create report'
       });
     }
   }
