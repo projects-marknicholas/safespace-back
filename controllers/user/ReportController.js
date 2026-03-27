@@ -44,7 +44,8 @@ class ReportController {
         procedureType,
         remarks,
         whereDidYouHearAboutUs,
-        otherWhereDidYouHearAboutUs
+        otherWhereDidYouHearAboutUs,
+        applicableLaws
       } = req.body;
 
       // Define required fields with display names
@@ -72,7 +73,8 @@ class ReportController {
         complainedIncidentHappened: "Incident Happened",
         complainedPhysicalAppearance: "Physical Appearance",
         procedureType: "Procedure Type",
-        whereDidYouHearAboutUs: "Where Did You Hear About Us"
+        whereDidYouHearAboutUs: "Where Did You Hear About Us",
+        applicableLaws: "Applicable Law"
       };
 
       // Check for missing required fields one at a time
@@ -390,6 +392,7 @@ class ReportController {
         remarks: remarks || null,
         whereDidYouHearAboutUs: whereDidYouHearAboutUs,
         otherWhereDidYouHearAboutUs: otherWhereDidYouHearAboutUs || null,
+        applicableLaws: applicableLaws.trim(),
         status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date()
