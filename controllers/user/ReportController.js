@@ -39,6 +39,7 @@ class ReportController {
         victimConstituent,
         complainedConstituent,
         complainedInsideCampus,
+        complainedExactLocation,
         complainantStory,
         complainedIncidentHappened,
         complainedPhysicalAppearance,
@@ -51,12 +52,9 @@ class ReportController {
         predictedOffenseConfidence,
         predictedSeverity,
         predictedSeverityConfidence,
-        incidentDate,      // NEW
-        incidentTime       // NEW
+        incidentDate,
+        incidentTime
       } = req.body;
-
-      console.log('🔵 [1] incidentDate from body:', incidentDate);
-      console.log('🔵 [1] incidentTime from body:', incidentTime);
 
       // Define required fields with display names – ADD incidentDate and incidentTime
       const requiredFields = {
@@ -79,6 +77,7 @@ class ReportController {
         victimConstituent: "Victim Constituent",
         complainedConstituent: "Complained Constituent",
         complainedInsideCampus: "Complained Inside Campus",
+        complainedExactLocation: "Complained Exact Location",
         complainantStory: "Complainant Story",
         complainedIncidentHappened: "Incident Happened",
         complainedPhysicalAppearance: "Physical Appearance",
@@ -282,11 +281,19 @@ class ReportController {
       }
 
       // Validate complainedInsideCampus
-      const validInsideCampus = ['Yes', 'No'];
+      const validInsideCampus = ['Inside the campus', 'Outside the campus, but UPLB activity', 'Outside the campus and not UPLB activity'];
       if (!validInsideCampus.includes(complainedInsideCampus)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
           message: 'Invalid Complained Inside Campus.'
+        });
+      }
+
+      // Validate complainedExactLocation (optional, max length)
+      if (complainedExactLocation && complainedExactLocation.length > 200) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          message: 'Complained Exact Location must not exceed 200 characters'
         });
       }
 
@@ -461,6 +468,7 @@ class ReportController {
         victimConstituent: victimConstituent.trim(),
         complainedConstituent: complainedConstituent.trim(),
         complainedInsideCampus: complainedInsideCampus.trim(),
+        complainedExactLocation: complainedExactLocation.trim(),
         complainantStory: complainantStory.trim(),
         complainedIncidentHappened: complainedIncidentHappened.trim(),
         complainedPhysicalAppearance: complainedPhysicalAppearance.trim(),

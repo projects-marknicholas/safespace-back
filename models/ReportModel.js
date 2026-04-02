@@ -11,23 +11,8 @@ class ReportModel {
 
   static async create(reportData) {
     try {
-      console.log('🔵 [4] Model received - incidentDate:', reportData.incidentDate);
-      console.log('🔵 [4] Model received - incidentTime:', reportData.incidentTime);
-      console.log('🔵 [4] Full reportData keys:', Object.keys(reportData).join(', '));
-
-      // Log entire data structure before Firestore
-      console.log('🔥 About to write to Firestore:', JSON.stringify(reportData, null, 2));
-
       const usersRef = db.collection(this.collection);
       const docRef = await usersRef.add(reportData);
-      
-      // Immediately read back to verify what was stored
-      const doc = await docRef.get();
-      const storedData = doc.data();
-      console.log('📄 Stored document:', JSON.stringify(storedData, null, 2));
-      console.log('✅ Firestore write successful, doc id:', docRef.id);
-      console.log('📄 Stored incidentDate:', storedData.incidentDate);
-      console.log('📄 Stored incidentTime:', storedData.incidentTime);
       
       // Invalidate cache for this user after creating new report
       await reportCache.invalidateUserCache(reportData.userId);
@@ -37,7 +22,7 @@ class ReportModel {
         ...reportData
       };
     } catch (error) {
-      console.error('❌ Firestore write error:', error);
+      console.error('Error creating report:', error);
       throw error;
     }
   }
@@ -428,6 +413,101 @@ class ReportModel {
 
     } catch (error) {
       console.error('Error getting reports by week:', error);
+      throw error;
+    }
+  }
+
+  static async getReportsByCategory() {
+    try {
+      const reportsRef = db.collection(this.collection);
+      const snapshot = await reportsRef.get();
+      
+      // Object to store category counts
+      const categoryCounts = {};
+      
+      snapshot.forEach(doc => {
+        const report = doc.data();
+        const category = report.classification; // Using classification field
+        
+        if (category) {
+          categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+        }
+      });
+      
+      return categoryCounts;
+      
+    } catch (error) {
+      console.error('Error getting reports by category:', error);
+      throw error;
+    }
+  }
+
+  static async getReportsByOffenseLevel() {
+    try {
+      const reportsRef = db.collection(this.collection);
+      const snapshot = await reportsRef.get();
+      
+      // Object to store offense level counts
+      const offenseCounts = {};
+      
+      snapshot.forEach(doc => {
+        const report = doc.data();
+        const offenseLevel = report.predictedOffense; // Using predictedOffense field
+        
+        if (offenseLevel) {
+          offenseCounts[offenseLevel] = (offenseCounts[offenseLevel] || 0) + 1;
+        }
+      });
+      
+      return offenseCounts;
+      
+    } catch (error) {
+      console.error('Error getting reports by offense level:', error);
+      throw error;
+    }
+  }
+
+  static async getMonthlyReports(year = null) {
+    try {
+      // Use current year if not specified
+      const targetYear = year || new Date().getFullYear();
+      
+      // Create date range for the entire year
+      const startDate = new Date(targetYear, 0, 1); // January 1st
+      const endDate = new Date(targetYear, 11, 31, 23, 59, 59); // December 31st
+      
+      const reportsRef = db.collection(this.collection);
+      const snapshot = await reportsRef
+        .where('createdAt', '>=', startDate)
+        .where('createdAt', '<=', endDate)
+        .get();
+      
+      // Initialize months array (January to December)
+      const monthlyCounts = new Array(12).fill(0);
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      
+      // Group reports by month
+      snapshot.forEach(doc => {
+        const report = doc.data();
+        const createdAt = report.createdAt?.toDate ? report.createdAt.toDate() : new Date(report.createdAt);
+        const month = createdAt.getMonth(); // 0 = January, 11 = December
+        
+        monthlyCounts[month]++;
+      });
+      
+      // Format the data for the frontend
+      return monthlyCounts.map((count, index) => ({
+        month: monthNames[index],
+        monthNumber: index + 1,
+        count: count,
+        year: targetYear
+      }));
+      
+    } catch (error) {
+      console.error('Error getting monthly reports:', error);
       throw error;
     }
   }

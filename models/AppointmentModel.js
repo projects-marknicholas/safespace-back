@@ -272,8 +272,8 @@ class AppointmentModel {
       
       const modeCounts = {
         'in-person': 0,
-        'video': 0,
-        'phone': 0
+        'video-call': 0,
+        'phone-call': 0
       };
 
       snapshot.forEach(doc => {
@@ -282,18 +282,18 @@ class AppointmentModel {
         
         if (mode === 'in-person') {
           modeCounts['in-person']++;
-        } else if (mode === 'video') {
-          modeCounts['video']++;
-        } else if (mode === 'phone') {
-          modeCounts['phone']++;
+        } else if (mode === 'video-call') {
+          modeCounts['video-call']++;
+        } else if (mode === 'phone-call') {
+          modeCounts['phone-call']++;
         }
       });
 
       // Format for frontend (array of objects)
       return [
         { mode: 'In-person', count: modeCounts['in-person'] },
-        { mode: 'Video call', count: modeCounts['video'] },
-        { mode: 'Phone call', count: modeCounts['phone'] }
+        { mode: 'Video call', count: modeCounts['video-call'] },
+        { mode: 'Phone call', count: modeCounts['phone-call'] }
       ];
 
     } catch (error) {

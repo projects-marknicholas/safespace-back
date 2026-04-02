@@ -216,6 +216,9 @@ class AccountController {
       const totalAppointments = await AppointmentModel.getTotalAppointments();
       const reportsLast6Weeks = await ReportModel.getReportsLast6Weeks(sixWeeksAgo, now);
       const appointmentsByMode = await AppointmentModel.getAppointmentsByMode();
+      const casesByCategory = await ReportModel.getReportsByCategory();
+      const casesByOffenseLevel = await ReportModel.getReportsByOffenseLevel();
+      const monthlyReports = await ReportModel.getMonthlyReports(); 
 
       // Return dashboard data
       return res.status(STATUS_CODES.OK).json({
@@ -228,7 +231,10 @@ class AccountController {
             totalAppointments
           },
           reportsLast6Weeks,
-          appointmentsByMode
+          appointmentsByMode,
+          casesByCategory,
+          casesByOffenseLevel,
+          monthlyReports
         }
       });
 
