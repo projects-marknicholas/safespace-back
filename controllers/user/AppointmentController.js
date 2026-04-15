@@ -72,12 +72,17 @@ class AppointmentController {
         });
       }
 
-      // Validate consultationMode
-      const validModes = ['in-person', 'video-call', 'phone-call'];
+      // UPDATED: New consultation mode values
+      const validModes = [
+        'in-person-oash',
+        'in-person-counseling',
+        'video-call-oash',
+        'video-call-counseling'
+      ];
       if (!validModes.includes(consultationMode)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Consultation Mode. Must be in-person, video-call, or phone-call'
+          message: 'Invalid Consultation Mode. Must be in-person-oash, in-person-counseling, video-call-oash, or video-call-counseling'
         });
       }
 
@@ -226,6 +231,7 @@ class AppointmentController {
       });
 
     } catch (error) {
+      console.error('Error creating appointment:', error);
       return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Failed to create appointment'
@@ -265,7 +271,7 @@ class AppointmentController {
         filters.status = status;
       }
 
-      // Add consultation mode filter if provided
+      // Add consultation mode filter if provided (now accepts new values)
       if (consultationMode) {
         filters.consultationMode = consultationMode;
       }
@@ -375,11 +381,17 @@ class AppointmentController {
       }
 
       if (consultationMode !== undefined) {
-        const validModes = ['in-person', 'video-call', 'phone-call'];
+        // UPDATED: New consultation mode values for update as well
+        const validModes = [
+          'in-person-oash',
+          'in-person-counseling',
+          'video-call-oash',
+          'video-call-counseling'
+        ];
         if (!validModes.includes(consultationMode)) {
           return res.status(STATUS_CODES.BAD_REQUEST).json({
             success: false,
-            message: 'Invalid Consultation Mode. Must be in-person, video-call, or phone-call'
+            message: 'Invalid Consultation Mode. Must be in-person-oash, in-person-counseling, video-call-oash, or video-call-counseling'
           });
         }
         updateData.consultationMode = consultationMode;
