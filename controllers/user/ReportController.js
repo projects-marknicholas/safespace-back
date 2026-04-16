@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 class ReportController {
   async create(req, res) {
     try {
-      // Get user ID from authenticated token (added by AuthenticateToken middleware)
+      // Get user ID from authenticated token
       const userId = req.user?.userId || req.user?.id;
       
       if (!userId) {
@@ -15,7 +15,7 @@ class ReportController {
         });
       }
 
-      // Destructure request body – ADD incidentDate and incidentTime
+      // Destructure request body – REMOVED complainedPhysicalAppearance
       const {
         firstName,
         middleName,
@@ -42,7 +42,6 @@ class ReportController {
         complainedExactLocation,
         complainantStory,
         complainedIncidentHappened,
-        complainedPhysicalAppearance,
         procedureType,
         remarks,
         whereDidYouHearAboutUs,
@@ -56,7 +55,7 @@ class ReportController {
         incidentTime
       } = req.body;
 
-      // Define required fields with display names – ADD incidentDate and incidentTime
+      // Define required fields – REMOVED complainedPhysicalAppearance
       const requiredFields = {
         firstName: "First Name",
         middleName: "Middle Name",
@@ -80,7 +79,6 @@ class ReportController {
         complainedExactLocation: "Complained Exact Location",
         complainantStory: "Complainant Story",
         complainedIncidentHappened: "Incident Happened",
-        complainedPhysicalAppearance: "Physical Appearance",
         procedureType: "Procedure Type",
         whereDidYouHearAboutUs: "Where Did You Hear About Us",
         applicableLaws: "Applicable Law",
@@ -88,11 +86,11 @@ class ReportController {
         predictedOffenseConfidence: "Offense Confidence",
         predictedSeverity: "Severity",
         predictedSeverityConfidence: "Severity Confidence",
-        incidentDate: "Incident Date",      // NEW
-        incidentTime: "Incident Time"       // NEW
+        incidentDate: "Incident Date",
+        incidentTime: "Incident Time"
       };
 
-      // Check for missing required fields one at a time
+      // Check for missing required fields
       for (const [field, displayName] of Object.entries(requiredFields)) {
         if (!req.body[field]) {
           return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -102,7 +100,7 @@ class ReportController {
         }
       }
 
-      // Validate firstName, middleName, and lastName
+      // Validate firstName, middleName, lastName
       const nameRegex = /^[A-Za-z\s\-']+$/;
       const nameFields = ['First name', 'Middle name', 'Last name'];
       const nameValues = [firstName, middleName, lastName];
@@ -160,7 +158,7 @@ class ReportController {
         });
       }
 
-      // Validate mobileNumber (required)
+      // Validate mobileNumber
       const mobileNumberRegex = /^\d{10,15}$/;
       if (!mobileNumberRegex.test(mobileNumber)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -185,7 +183,6 @@ class ReportController {
         { value: presentAddress, name: 'Present Address' },
         { value: permanentAddress, name: 'Permanent Address' }
       ];
-
       for (const field of addressFields) {
         if (field.value && field.value.length > 200) {
           return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -325,19 +322,7 @@ class ReportController {
         });
       }
 
-      // Validate complainedPhysicalAppearance
-      if (!complainedPhysicalAppearance || complainedPhysicalAppearance.trim().length === 0) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          message: 'Physical Appearance is required'
-        });
-      }
-      if (complainedPhysicalAppearance.length > 500) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          message: 'Physical Appearance must not exceed 500 characters'
-        });
-      }
+      // REMOVED: Validation for complainedPhysicalAppearance
 
       // Validate procedureType
       const validProcedureTypes = ['Formal procedure', 'Informal procedure', 'Undecided / need guidance'];
@@ -365,7 +350,7 @@ class ReportController {
         });
       }
 
-      // Validate otherWhereDidYouHearAboutUs (required if "Others:" is selected)
+      // Validate otherWhereDidYouHearAboutUs
       if (whereDidYouHearAboutUs === 'Others:' && (!otherWhereDidYouHearAboutUs || otherWhereDidYouHearAboutUs.trim() === '')) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
@@ -380,7 +365,7 @@ class ReportController {
         });
       }
 
-      // NEW: Validate incidentDate (format YYYY-MM-DD)
+      // Validate incidentDate
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(incidentDate)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -396,7 +381,7 @@ class ReportController {
         });
       }
 
-      // NEW: Validate incidentTime (format HH:MM)
+      // Validate incidentTime
       const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
       if (!timeRegex.test(incidentTime)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -404,9 +389,6 @@ class ReportController {
           message: 'Incident Time must be in HH:MM format'
         });
       }
-
-      console.log('🔵 [2] After validation - incidentDate:', incidentDate);
-      console.log('🔵 [2] After validation - incidentTime:', incidentTime);
 
       // Check existing reports and get sanction recommendation
       let sanctionResult = null;
@@ -426,7 +408,6 @@ class ReportController {
                         existingReports.count === 2 ? 'Third offense' : 'Multiple offenses'
         };
         
-        // Log for monitoring
         console.log(`Sanction check for ${complainedFullName}:`, {
           reportCount: existingReports.count,
           severity: predictedSeverity,
@@ -436,13 +417,12 @@ class ReportController {
         
       } catch (sanctionError) {
         console.error('Error checking existing reports:', sanctionError);
-        // Continue with report creation even if sanction check fails
       }
 
-      // Create report ID using uuid
+      // Create report ID
       const reportId = uuidv4();
 
-      // Prepare report data for insertion – ADD incidentDate and incidentTime
+      // Prepare report data – REMOVED complainedPhysicalAppearance
       const reportData = {
         reportId: reportId,
         userId: userId,
@@ -471,7 +451,7 @@ class ReportController {
         complainedExactLocation: complainedExactLocation.trim(),
         complainantStory: complainantStory.trim(),
         complainedIncidentHappened: complainedIncidentHappened.trim(),
-        complainedPhysicalAppearance: complainedPhysicalAppearance.trim(),
+        // REMOVED: complainedPhysicalAppearance
         procedureType: procedureType,
         remarks: remarks || null,
         whereDidYouHearAboutUs: whereDidYouHearAboutUs,
@@ -486,25 +466,17 @@ class ReportController {
         status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date(),
-
-        // Sanctions
         previousReportCount: sanctionResult?.reportCount || 0,
         recommendedSanction: sanctionResult?.recommendedSanction || null,
         isRepeatOffender: sanctionResult?.isRepeatOffender || false,
         offenseLevel: sanctionResult?.offenseLevel || 'First offense',
-
-        // NEW: Incident date and time
         incidentDate: incidentDate,
         incidentTime: incidentTime
       };
-      
-      console.log('🔵 [3] Before model - incidentDate:', reportData.incidentDate);
-      console.log('🔵 [3] Before model - incidentTime:', reportData.incidentTime);
 
-      // Insert report into database
+      // Insert report
       const insertData = await ReportModel.create(reportData);
 
-      // Check if insertion was successful
       if (!insertData) {
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
           success: false,
@@ -528,10 +500,7 @@ class ReportController {
 
   async get(req, res) {
     try {
-      // Get user ID from authenticated token
       const userId = req.user?.userId || req.user?.id;
-      
-      // Check if user is authenticated
       if (!userId) {
         return res.status(STATUS_CODES.UNAUTHORIZED).json({
           success: false,
@@ -539,11 +508,8 @@ class ReportController {
         });
       }
 
-      // Get pagination parameters from query string
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
-      
-      // Get filter parameters from query string
       const status = req.query.status;
       const classification = req.query.classification;
       const procedureType = req.query.procedureType;
@@ -551,38 +517,17 @@ class ReportController {
       const toDate = req.query.toDate;
       const search = req.query.search;
 
-      // Build filter object
       const filters = { userId: userId };
+      if (status) filters.status = status;
+      if (classification) filters.classification = classification;
+      if (procedureType) filters.procedureType = procedureType;
 
-      // Add status filter if provided
-      if (status) {
-        filters.status = status;
-      }
-
-      // Add classification filter if provided
-      if (classification) {
-        filters.classification = classification;
-      }
-
-      // Add procedure type filter if provided
-      if (procedureType) {
-        filters.procedureType = procedureType;
-      }
-
-      // Build date filters object
       const dateFilters = {};
-      if (fromDate) {
-        dateFilters.fromDate = new Date(fromDate);
-      }
-      if (toDate) {
-        // Set to end of the day
-        dateFilters.toDate = new Date(toDate + 'T23:59:59.999Z');
-      }
+      if (fromDate) dateFilters.fromDate = new Date(fromDate);
+      if (toDate) dateFilters.toDate = new Date(toDate + 'T23:59:59.999Z');
 
-      // Fetch reports from database with filters and pagination
       const result = await ReportModel.get(filters, page, limit, search, dateFilters);
 
-      // Return success response with data and pagination info
       return res.status(STATUS_CODES.OK).json({
         success: true,
         data: result.reports,
@@ -607,10 +552,7 @@ class ReportController {
   
   async getCount(req, res) {
     try {
-      // Get user ID from authenticated token
       const userId = req.user?.userId || req.user?.id;
-      
-      // Check if user is authenticated
       if (!userId) {
         return res.status(STATUS_CODES.UNAUTHORIZED).json({
           success: false,
@@ -618,24 +560,20 @@ class ReportController {
         });
       }
 
-      // Get parameters from query
       const { fullName, severity, classification } = req.query;
 
-      // Validate required parameters
       if (!fullName) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
           message: 'Please provide fullName parameter'
         });
       }
-
       if (!severity) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
           message: 'Please provide severity parameter'
         });
       }
-
       if (!classification) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
@@ -643,7 +581,6 @@ class ReportController {
         });
       }
 
-      // Validate severity values
       const validSeverities = ['Grave', 'Less Grave', 'Light', 'None'];
       if (!validSeverities.includes(severity)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -652,7 +589,6 @@ class ReportController {
         });
       }
 
-      // Validate classification values
       const validClassifications = ['Student', 'Professor', 'Instructor', 'Teacher', `Gov't Employee`, 'Stranger', 'Co-worker', 'Colleague'];
       if (!validClassifications.includes(classification)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -661,7 +597,6 @@ class ReportController {
         });
       }
 
-      // Call the model to get the count and determine sanction
       const result = await ReportModel.getCountWithSanction(
         fullName.trim(),
         severity,
