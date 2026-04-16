@@ -15,7 +15,7 @@ class ReportController {
         });
       }
 
-      // Destructure request body – REMOVED complainedPhysicalAppearance
+      // Destructure request body – REMOVED whereDidYouHearAboutUs and otherWhereDidYouHearAboutUs
       const {
         firstName,
         middleName,
@@ -44,8 +44,6 @@ class ReportController {
         complainedIncidentHappened,
         procedureType,
         remarks,
-        whereDidYouHearAboutUs,
-        otherWhereDidYouHearAboutUs,
         applicableLaws,
         predictedOffense,
         predictedOffenseConfidence,
@@ -55,7 +53,7 @@ class ReportController {
         incidentTime
       } = req.body;
 
-      // Define required fields – REMOVED complainedPhysicalAppearance
+      // Define required fields – REMOVED whereDidYouHearAboutUs and otherWhereDidYouHearAboutUs
       const requiredFields = {
         firstName: "First Name",
         middleName: "Middle Name",
@@ -80,7 +78,6 @@ class ReportController {
         complainantStory: "Complainant Story",
         complainedIncidentHappened: "Incident Happened",
         procedureType: "Procedure Type",
-        whereDidYouHearAboutUs: "Where Did You Hear About Us",
         applicableLaws: "Applicable Law",
         predictedOffense: "Offense",
         predictedOffenseConfidence: "Offense Confidence",
@@ -322,14 +319,12 @@ class ReportController {
         });
       }
 
-      // REMOVED: Validation for complainedPhysicalAppearance
-
       // Validate procedureType
-      const validProcedureTypes = ['Formal procedure', 'Informal procedure', 'Undecided / need guidance'];
+      const validProcedureTypes = ['Yes', 'No', 'Undecided/need guidance'];
       if (!validProcedureTypes.includes(procedureType)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Procedure Type. Must be Formal procedure, Informal procedure, or Undecided / need guidance'
+          message: 'Invalid Procedure Type. Must be Yes, No, or Undecided/need guidance'
         });
       }
 
@@ -341,29 +336,7 @@ class ReportController {
         });
       }
 
-      // Validate whereDidYouHearAboutUs
-      const validHearAboutUs = ['Student orientation', 'Flyers / leaflets / ads', 'Word of mouth', 'Social media', 'OASH caravan', 'Others:'];
-      if (!validHearAboutUs.includes(whereDidYouHearAboutUs)) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          message: 'Invalid selection for Where Did You Hear About Us'
-        });
-      }
-
-      // Validate otherWhereDidYouHearAboutUs
-      if (whereDidYouHearAboutUs === 'Others:' && (!otherWhereDidYouHearAboutUs || otherWhereDidYouHearAboutUs.trim() === '')) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          message: 'Please specify where you heard about us'
-        });
-      }
-      
-      if (otherWhereDidYouHearAboutUs && otherWhereDidYouHearAboutUs.length > 100) {
-        return res.status(STATUS_CODES.BAD_REQUEST).json({
-          success: false,
-          message: 'Other source must not exceed 100 characters'
-        });
-      }
+      // REMOVED: Validation for whereDidYouHearAboutUs and otherWhereDidYouHearAboutUs
 
       // Validate incidentDate
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -422,7 +395,7 @@ class ReportController {
       // Create report ID
       const reportId = uuidv4();
 
-      // Prepare report data – REMOVED complainedPhysicalAppearance
+      // Prepare report data – REMOVED whereDidYouHearAboutUs and otherWhereDidYouHearAboutUs
       const reportData = {
         reportId: reportId,
         userId: userId,
@@ -451,11 +424,8 @@ class ReportController {
         complainedExactLocation: complainedExactLocation.trim(),
         complainantStory: complainantStory.trim(),
         complainedIncidentHappened: complainedIncidentHappened.trim(),
-        // REMOVED: complainedPhysicalAppearance
         procedureType: procedureType,
         remarks: remarks || null,
-        whereDidYouHearAboutUs: whereDidYouHearAboutUs,
-        otherWhereDidYouHearAboutUs: otherWhereDidYouHearAboutUs || null,
         applicableLaws: Array.isArray(applicableLaws) 
           ? applicableLaws.join(', ') 
           : (applicableLaws ? applicableLaws.trim() : ''),
