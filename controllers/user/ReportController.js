@@ -15,7 +15,7 @@ class ReportController {
         });
       }
 
-      // Destructure request body
+      // Destructure request body – matches all fields in report.html
       const {
         firstName,
         middleName,
@@ -53,7 +53,7 @@ class ReportController {
         incidentTime
       } = req.body;
 
-      // Define required fields
+      // Required fields – no whereDidYouHearAboutUs, no physical appearance
       const requiredFields = {
         firstName: "First Name",
         middleName: "Middle Name",
@@ -87,7 +87,7 @@ class ReportController {
         incidentTime: "Incident Time"
       };
 
-      // Check for missing required fields
+      // Check missing required fields
       for (const [field, displayName] of Object.entries(requiredFields)) {
         if (!req.body[field]) {
           return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -97,21 +97,18 @@ class ReportController {
         }
       }
 
-      // Validate firstName, middleName, lastName
+      // Validate name fields
       const nameRegex = /^[A-Za-z\s\-']+$/;
       const nameFields = ['First name', 'Middle name', 'Last name'];
       const nameValues = [firstName, middleName, lastName];
-
       for (let i = 0; i < nameFields.length; i++) {
         const trimmed = nameValues[i]?.trim();
-        
         if (!trimmed || !nameRegex.test(trimmed)) {
           return res.status(STATUS_CODES.BAD_REQUEST).json({
             success: false,
             message: `${nameFields[i]} can only contain letters, spaces, hyphens, and apostrophes`
           });
         }
-        
         if (trimmed.length > 50) {
           return res.status(STATUS_CODES.BAD_REQUEST).json({
             success: false,
@@ -130,19 +127,19 @@ class ReportController {
 
       // Validate biologicalSex
       const validBiologicalSexes = ['Male', 'Female', 'Other'];
-      if (!validBiologicalSexes.includes(biologicalSex)) {  
+      if (!validBiologicalSexes.includes(biologicalSex)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
           message: 'Invalid Biological Sex. Must be Male, Female, or Other'
         });
       }
 
-      // UPDATED: Validate identifiedAs with new options
-      const validIdentifiedAs = ['Cisgender Female', 'Cisgender Male', 'Non-Binary'];
+      // Validate identifiedAs – matches dropdown options in report.html
+      const validIdentifiedAs = ['Cisgender Male', 'Cisgender Female', 'Non-Binary'];
       if (!validIdentifiedAs.includes(identifiedAs)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: `Invalid Identity. Must be Cisgender Female, Cisgender Male, or Non-Binary`
+          message: 'Invalid Identity. Must be Cisgender Male, Cisgender Female, or Non-Binary'
         });
       }
 
@@ -175,7 +172,7 @@ class ReportController {
         }
       }
 
-      // Validate presentAddress and permanentAddress
+      // Validate addresses
       const addressFields = [
         { value: presentAddress, name: 'Present Address' },
         { value: permanentAddress, name: 'Permanent Address' }
@@ -189,24 +186,25 @@ class ReportController {
         }
       }
 
-      // Validate classification
-      const validClassifications = ['Student', 'Professor', 'Instructor', 'Teacher', `Gov't Employee`, 'Stranger'];
+      // Validate complainant classification – matches dropdown options in report.html
+      const validClassifications = [
+        'Student', 'instructor/professor', 'non-teaching personnel (admin & reps)',
+        'Alumni', 'non-UP/outsider'
+      ];
       if (!validClassifications.includes(classification)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Classification.'
+          message: 'Invalid Complainant Classification.'
         });
       }
 
-      // Validate college (max length)
+      // Validate college/department (max length)
       if (college && college.length > 100) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
           message: 'College must not exceed 100 characters'
         });
       }
-
-      // Validate department (max length)
       if (department && department.length > 100) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
@@ -218,7 +216,7 @@ class ReportController {
       if (!nameRegex.test(complainedFullName.trim()) || complainedFullName.trim().length > 100) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Complained Full Name can only contain letters, spaces, hyphens, apostrophes, and must not exceed 100 characters'
+          message: 'Respondent Full Name can only contain letters, spaces, hyphens, apostrophes, and must not exceed 100 characters'
         });
       }
 
@@ -227,71 +225,69 @@ class ReportController {
       if (!validSexes.includes(complainedSex)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Complained Sex. Must be Male, Female, or Other'
+          message: 'Invalid Respondent Sex. Must be Male, Female, or Other'
         });
       }
 
-      // Validate complainedClassification
-      const validComplainedClassifications = ['Student', 'Professor', 'Instructor', 'Teacher', `Gov't Employee`, 'Stranger', 'Co-worker', 'Colleague'];
-      if (!validComplainedClassifications.includes(complainedClassification)) {
+      // Validate respondent classification – same options as complainant
+      if (!validClassifications.includes(complainedClassification)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Complained Classification.'
+          message: 'Invalid Respondent Classification.'
         });
       }
 
-      // Validate complainedCollege (max length)
+      // Validate respondent college/department (max length)
       if (complainedCollege && complainedCollege.length > 100) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Complained College must not exceed 100 characters'
+          message: 'Respondent College must not exceed 100 characters'
         });
       }
-
-      // Validate complainedDepartment (max length)
       if (complainedDepartment && complainedDepartment.length > 100) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Complained Department must not exceed 100 characters'
+          message: 'Respondent Department must not exceed 100 characters'
         });
       }
 
-      // Validate victimConstituent
-      const validVictimConstituent = ['Yes', 'No'];
-      if (!validVictimConstituent.includes(victimConstituent)) {
+      // Validate constituent answers
+      const validConstituent = ['Yes', 'No'];
+      if (!validConstituent.includes(victimConstituent)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Constituent'
+          message: 'Invalid Complainant Constituent'
         });
       }
-
-      // Validate complainedConstituent
-      const validConstituent = ['Yes', 'No'];
       if (!validConstituent.includes(complainedConstituent)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Complained Constituent.'
+          message: 'Invalid Respondent Constituent'
         });
       }
 
-      // Validate complainedInsideCampus
-      const validInsideCampus = ['Inside the campus', 'Outside the campus, but UPLB activity', 'Outside the campus and not UPLB activity'];
+      // Validate incident location
+      const validInsideCampus = [
+        'Inside the campus',
+        'Outside the campus, but UPLB activity',
+        'Outside the campus and not UPLB activity'
+      ];
       if (!validInsideCampus.includes(complainedInsideCampus)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Invalid Complained Inside Campus.'
+          message: 'Invalid Incident Location.'
         });
       }
 
-      // Validate complainedExactLocation (optional, max length)
+      // Validate exact location (optional, max length)
       if (complainedExactLocation && complainedExactLocation.length > 200) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Complained Exact Location must not exceed 200 characters'
+          message: 'Exact Location must not exceed 200 characters'
         });
       }
 
-      // Validate complainantStory
+      // Validate complainant story
       if (!complainantStory || complainantStory.trim().length === 0) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
@@ -305,7 +301,7 @@ class ReportController {
         });
       }
 
-      // Validate complainedIncidentHappened
+      // Validate incident event
       if (!complainedIncidentHappened || complainedIncidentHappened.trim().length === 0) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
@@ -319,7 +315,7 @@ class ReportController {
         });
       }
 
-      // Validate procedureType
+      // Validate procedure type
       const validProcedureTypes = ['Yes', 'No', 'Undecided/need guidance'];
       if (!validProcedureTypes.includes(procedureType)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -336,7 +332,7 @@ class ReportController {
         });
       }
 
-      // Validate incidentDate
+      // Validate incident date
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(incidentDate)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -352,7 +348,7 @@ class ReportController {
         });
       }
 
-      // Validate incidentTime
+      // Validate incident time
       const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
       if (!timeRegex.test(incidentTime)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -361,7 +357,7 @@ class ReportController {
         });
       }
 
-      // Check existing reports and get sanction recommendation
+      // Sanction check (repeat offender)
       let sanctionResult = null;
       try {
         const existingReports = await ReportModel.getCountWithSanction(
@@ -369,23 +365,14 @@ class ReportController {
           predictedSeverity,
           complainedClassification
         );
-        
         sanctionResult = {
           reportCount: existingReports.count,
           recommendedSanction: existingReports.sanction,
           isRepeatOffender: existingReports.count > 0,
-          offenseLevel: existingReports.count === 0 ? 'First offense' : 
-                        existingReports.count === 1 ? 'Second offense' : 
+          offenseLevel: existingReports.count === 0 ? 'First offense' :
+                        existingReports.count === 1 ? 'Second offense' :
                         existingReports.count === 2 ? 'Third offense' : 'Multiple offenses'
         };
-        
-        console.log(`Sanction check for ${complainedFullName}:`, {
-          reportCount: existingReports.count,
-          severity: predictedSeverity,
-          classification: complainedClassification,
-          sanction: existingReports.sanction
-        });
-        
       } catch (sanctionError) {
         console.error('Error checking existing reports:', sanctionError);
       }
@@ -424,8 +411,8 @@ class ReportController {
         complainedIncidentHappened: complainedIncidentHappened.trim(),
         procedureType: procedureType,
         remarks: remarks || null,
-        applicableLaws: Array.isArray(applicableLaws) 
-          ? applicableLaws.join(', ') 
+        applicableLaws: Array.isArray(applicableLaws)
+          ? applicableLaws.join(', ')
           : (applicableLaws ? applicableLaws.trim() : ''),
         predictedOffense: predictedOffense || null,
         predictedOffenseConfidence: predictedOffenseConfidence !== undefined ? predictedOffenseConfidence : null,
@@ -444,7 +431,6 @@ class ReportController {
 
       // Insert report
       const insertData = await ReportModel.create(reportData);
-
       if (!insertData) {
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
           success: false,
@@ -517,7 +503,7 @@ class ReportController {
       });
     }
   }
-  
+
   async getCount(req, res) {
     try {
       const userId = req.user?.userId || req.user?.id;
@@ -557,7 +543,11 @@ class ReportController {
         });
       }
 
-      const validClassifications = ['Student', 'Professor', 'Instructor', 'Teacher', `Gov't Employee`, 'Stranger', 'Co-worker', 'Colleague'];
+      // Classification must match the valid set (same as complainant/respondent)
+      const validClassifications = [
+        'Student', 'instructor/professor', 'non-teaching personnel (admin & reps)',
+        'Alumni', 'non-UP/outsider'
+      ];
       if (!validClassifications.includes(classification)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
