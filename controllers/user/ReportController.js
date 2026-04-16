@@ -15,7 +15,7 @@ class ReportController {
         });
       }
 
-      // Destructure request body – REMOVED whereDidYouHearAboutUs and otherWhereDidYouHearAboutUs
+      // Destructure request body
       const {
         firstName,
         middleName,
@@ -53,7 +53,7 @@ class ReportController {
         incidentTime
       } = req.body;
 
-      // Define required fields – REMOVED whereDidYouHearAboutUs and otherWhereDidYouHearAboutUs
+      // Define required fields
       const requiredFields = {
         firstName: "First Name",
         middleName: "Middle Name",
@@ -137,12 +137,12 @@ class ReportController {
         });
       }
 
-      // Validate identifiedAs
-      const validIdentifiedAs = ['Male', 'Female', 'Non-binary', 'Other'];
+      // UPDATED: Validate identifiedAs with new options
+      const validIdentifiedAs = ['Cisgender Female', 'Cisgender Male', 'Non-Binary'];
       if (!validIdentifiedAs.includes(identifiedAs)) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: `Invalid Identity. Must be Male, Female, Non-binary, or Other`
+          message: `Invalid Identity. Must be Cisgender Female, Cisgender Male, or Non-Binary`
         });
       }
 
@@ -336,8 +336,6 @@ class ReportController {
         });
       }
 
-      // REMOVED: Validation for whereDidYouHearAboutUs and otherWhereDidYouHearAboutUs
-
       // Validate incidentDate
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(incidentDate)) {
@@ -395,7 +393,7 @@ class ReportController {
       // Create report ID
       const reportId = uuidv4();
 
-      // Prepare report data – REMOVED whereDidYouHearAboutUs and otherWhereDidYouHearAboutUs
+      // Prepare report data
       const reportData = {
         reportId: reportId,
         userId: userId,
