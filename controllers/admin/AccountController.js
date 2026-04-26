@@ -50,24 +50,44 @@ class AccountController {
         });
       }
 
+      // Get pagination parameters from query string
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
+      
+      // Get filter parameters from query string
       const role = req.query.role;
       const status = req.query.status;
       const fromDate = req.query.fromDate;
       const toDate = req.query.toDate;
       const search = req.query.search;
 
+      // Build filter object
       const filters = {};
-      if (role) filters.role = role;
-      if (status) filters.status = status;
 
+      // Add role filter if provided
+      if (role) {
+        filters.role = role;
+      }
+
+      // Add status filter if provided (if you have status field)
+      if (status) {
+        filters.status = status;
+      }
+
+      // Build date filters object
       const dateFilters = {};
-      if (fromDate) dateFilters.fromDate = new Date(fromDate);
-      if (toDate) dateFilters.toDate = new Date(toDate + 'T23:59:59.999Z');
+      if (fromDate) {
+        dateFilters.fromDate = new Date(fromDate);
+      }
+      if (toDate) {
+        // Set to end of the day
+        dateFilters.toDate = new Date(toDate + 'T23:59:59.999Z');
+      }
 
+      // Fetch users from database with filters and pagination
       const result = await AccountModel.getUsers(filters, page, limit, search, dateFilters);
 
+      // Return success response with data and pagination info
       return res.status(STATUS_CODES.OK).json({
         success: true,
         data: result.users,
@@ -80,6 +100,7 @@ class AccountController {
           hasNext: result.hasNextPage
         }
       });
+
     } catch (error) {
       console.error('Error fetching users:', error);
       return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
@@ -134,6 +155,7 @@ class AccountController {
         });
       }
 
+      // Prevent users from changing their own role
       if (targetUserId === userId) {
         return res.status(STATUS_CODES.FORBIDDEN).json({
           success: false,
@@ -161,6 +183,7 @@ class AccountController {
           updatedAt: updatedUser.updatedAt
         }
       });
+
     } catch (error) {
       console.error('Error updating user role:', error);
       return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
@@ -181,10 +204,12 @@ class AccountController {
         });
       }
 
+      // Get current date for calculations
       const now = new Date();
       const sixWeeksAgo = new Date(now);
-      sixWeeksAgo.setDate(now.getDate() - 42);
+      sixWeeksAgo.setDate(now.getDate() - 42); // 6 weeks * 7 days = 42 days
 
+      // Get all dashboard data from models
       const totalReports = await ReportModel.getTotalReports();
       const pendingReports = await ReportModel.getPendingReports();
       const registeredUsers = await AuthModel.getTotalUsers();
@@ -194,8 +219,9 @@ class AccountController {
       const casesByCategory = await ReportModel.getReportsByCategory();
       const casesByOffenseLevel = await ReportModel.getReportsByOffenseLevel();
       const monthlyReports = await ReportModel.getMonthlyReports();
-      const casesByLocation = await ReportModel.getReportsByLocation(); // ADDED
+      const casesByLocation = await ReportModel.getReportsByLocation(); // <<< ONLY ADDITION
 
+      // Return dashboard data
       return res.status(STATUS_CODES.OK).json({
         success: true,
         data: {
@@ -210,9 +236,10 @@ class AccountController {
           casesByCategory,
           casesByOffenseLevel,
           monthlyReports,
-          casesByLocation // ADDED
+          casesByLocation // <<< ONLY ADDITION
         }
       });
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
