@@ -218,7 +218,8 @@ class AccountController {
       const appointmentsByMode = await AppointmentModel.getAppointmentsByMode();
       const casesByCategory = await ReportModel.getReportsByCategory();
       const casesByOffenseLevel = await ReportModel.getReportsByOffenseLevel();
-      const monthlyReports = await ReportModel.getMonthlyReports(); 
+      const monthlyReports = await ReportModel.getMonthlyReports();
+      const casesByLocation = await ReportModel.getReportsByLocation(); // ADDED
 
       // Return dashboard data
       return res.status(STATUS_CODES.OK).json({
@@ -234,7 +235,8 @@ class AccountController {
           appointmentsByMode,
           casesByCategory,
           casesByOffenseLevel,
-          monthlyReports
+          monthlyReports,
+          casesByLocation // ADDED
         }
       });
 
