@@ -543,6 +543,25 @@ class ReportModel {
       throw error;
     }
   }
+  static async getReportsByLocation() {
+  try {
+    const reportsRef = db.collection(this.collection);
+    const snapshot = await reportsRef.get();
+    const locationMap = new Map();
+    snapshot.forEach(doc => {
+      const location = doc.data().complainedExactLocation;
+      if (location && typeof location === 'string' && location.trim() !== '') {
+        locationMap.set(location, (locationMap.get(location) || 0) + 1);
+      }
+    });
+    const locations = Array.from(locationMap, ([location, count]) => ({ location, count }));
+    locations.sort((a, b) => b.count - a.count);
+    return locations;
+  } catch (error) {
+    console.error('Error getting reports by location:', error);
+    return [];
+  }
+}
 }
 
 module.exports = ReportModel;
